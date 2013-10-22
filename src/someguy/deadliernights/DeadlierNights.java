@@ -14,6 +14,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -45,8 +46,6 @@ public class DeadlierNights extends JavaPlugin implements Listener
 
 		@SuppressWarnings("unused")
 		BukkitTask checker = new PlayerCheckTask(this).runTaskTimer(this, 0, 20L);
-
-		decayRate = 0;
 	}
 
 	public void checkPlayers()
@@ -75,7 +74,8 @@ public class DeadlierNights extends JavaPlugin implements Listener
 							if (log)
 								getLogger().info("Applied " + pair.getEffect().getName() + " " + pair.getLevel() + " to " + player.getName());
 						}
-					} else if (pair.getDelay() == current)
+					}
+					else if (pair.getDelay() == current)
 					{
 						player.addPotionEffect(new PotionEffect(pair.getEffect(), Integer.MAX_VALUE, pair.getLevel()));
 						if (log)
@@ -84,7 +84,8 @@ public class DeadlierNights extends JavaPlugin implements Listener
 							player.sendMessage(pair.getText());
 					}
 				}
-			} else if (playerMap.get(player.getName()) > 0)
+			}
+			else if (playerMap.get(player.getName()) > 0)
 			{
 				if (decayRate == 0)
 				{
@@ -100,7 +101,8 @@ public class DeadlierNights extends JavaPlugin implements Listener
 						}
 					}
 					playerMap.put(player.getName(), 0);
-				} else
+				}
+				else
 				{
 					boolean dropped = true;
 					if (playerMap.get(player.getName()) < shortestDelay)
@@ -142,6 +144,17 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		playerMap.put(event.getPlayer().getName(), 0);
 	}
 
+	public void onPlayerLogout(PlayerQuitEvent event)
+	{
+		for (EffectTimePair pair : effects)
+		{
+			if (event.getPlayer().hasPotionEffect(pair.getEffect()) && playerMap.get(event.getPlayer().getName()) < pair.getDelay())
+			{
+				event.getPlayer().removePotionEffect(pair.getEffect());
+			}
+		}
+	}
+
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 	{
@@ -154,20 +167,24 @@ public class DeadlierNights extends JavaPlugin implements Listener
 				else
 					sender.sendMessage("[DeadlierNights]: Chat messages are disabled");
 				return true;
-			} else if (args[0].equalsIgnoreCase("true"))
+			}
+			else if (args[0].equalsIgnoreCase("true"))
 			{
 				chat = true;
 				sender.sendMessage("[DeadlierNights]: Chat messages enabled.");
 				return true;
-			} else if (args[0].equalsIgnoreCase("false"))
+			}
+			else if (args[0].equalsIgnoreCase("false"))
 			{
 				chat = false;
 				sender.sendMessage("[DeadlierNights]: Chat messages disabled.");
 				return true;
-			} else
+			}
+			else
 				return false;
 
-		} else if (cmd.getName().equalsIgnoreCase("DNlog"))
+		}
+		else if (cmd.getName().equalsIgnoreCase("DNlog"))
 		{
 			if (args.length == 0)
 			{
@@ -176,21 +193,25 @@ public class DeadlierNights extends JavaPlugin implements Listener
 				else
 					sender.sendMessage("[DeadlierNights]: Log messages are disabled");
 				return true;
-			} else if (args[0].equalsIgnoreCase("true"))
+			}
+			else if (args[0].equalsIgnoreCase("true"))
 			{
 				log = true;
 				sender.sendMessage("[DeadlierNights]: Log messages enabled.");
 				return true;
-			} else if (args[0].equalsIgnoreCase("false"))
+			}
+			else if (args[0].equalsIgnoreCase("false"))
 			{
 				log = false;
 				sender.sendMessage("[DeadlierNights]: Log messages disabled.");
 				return true;
-			} else
+			}
+			else
 			{
 				return false;
 			}
-		} else if (cmd.getName().equalsIgnoreCase("DNDecay"))
+		}
+		else if (cmd.getName().equalsIgnoreCase("DNDecay"))
 		{
 			if (args.length == 0)
 			{
@@ -199,19 +220,27 @@ public class DeadlierNights extends JavaPlugin implements Listener
 				else
 					sender.sendMessage("[DeadlierNights]: The decay is currently set to " + decayRate + "/sec");
 				return true;
-			} else
+			}
+			else
 			{
 				try
 				{
 					int input = Integer.parseInt(args[0]);
 					decayRate = input;
-				} catch (NumberFormatException e)
+				}
+				catch (NumberFormatException e)
 				{
 					return false;
 				}
 				return true;
 			}
-		} else
+		}
+		else if (cmd.getName().equalsIgnoreCase("DNreload"))
+		{
+			reload();
+			return true;
+		}
+		else
 		{
 			return false;
 		}
@@ -234,36 +263,34 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					line++;
 					input = scanner.nextLine();
 					if (input.contains("decay rate:"))
-					{
 						decayRate = intConfigCheck(input, "decay rate:");
-						System.out.println(decayRate);
-					} else if (input.contains("chat:"))
-					{
+					else if (input.contains("chat:"))
 						chat = boolConfigCheck(input, "chat:");
-						System.out.println(chat);
-					} else if (input.contains("log:"))
-					{
+					else if (input.contains("log:"))
 						log = boolConfigCheck(input, "log:");
-						System.out.println(log);
-					}
 				}
-			} catch (NumberFormatException e)
+			}
+			catch (NumberFormatException e)
 			{
 				System.out.println(e);
 				getLogger().warning("Error: Can't read config.txt (is there a typo on line " + line + "?)");
-			} catch (IOException e)
+			}
+			catch (IOException e)
 			{
 				System.out.println(e.getMessage() + line);
-			} finally
+			}
+			finally
 			{
 				scanner.close();
 			}
-		} catch (FileNotFoundException e)
+		}
+		catch (FileNotFoundException e)
 		{
 			try
 			{
 				getLogger().info(new java.io.File(".").getCanonicalPath());
-			} catch (IOException e1)
+			}
+			catch (IOException e1)
 			{
 				e1.printStackTrace();
 			}
@@ -273,7 +300,8 @@ public class DeadlierNights extends JavaPlugin implements Listener
 				PrintWriter out = new PrintWriter(new File("plugins\\DeadlierNights\\config.txt"));
 				out.println("decay rate: 0");
 				out.close();
-			} catch (IOException ee)
+			}
+			catch (IOException ee)
 			{
 				getLogger().warning(ee.getMessage());
 			}
@@ -325,24 +353,29 @@ public class DeadlierNights extends JavaPlugin implements Listener
 						}
 					}
 				}
-			} catch (NumberFormatException e)
+			}
+			catch (NumberFormatException e)
 			{
 				System.out.println(e);
 				getLogger().warning("ERROR: Can't read effects.txt (is there a typo on line " + line + "?)");
-			} catch (IOException e)
+			}
+			catch (IOException e)
 			{
 				System.out.println(e);
 				getLogger().warning("ERROR: Can't read effects.txt (is there a typo on line " + line + "?)");
-			} finally
+			}
+			finally
 			{
 				scanner.close();
 			}
-		} catch (FileNotFoundException e)
+		}
+		catch (FileNotFoundException e)
 		{
 			try
 			{
 				getLogger().info(new java.io.File(".").getCanonicalPath());
-			} catch (IOException e1)
+			}
+			catch (IOException e1)
 			{
 				e1.printStackTrace();
 			}
@@ -370,7 +403,8 @@ public class DeadlierNights extends JavaPlugin implements Listener
 				out.println("offtext: TEST2");
 				out.println("---");
 				out.close();
-			} catch (IOException ee)
+			}
+			catch (IOException ee)
 			{
 				getLogger().warning(ee.getMessage());
 			}
@@ -398,11 +432,13 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		{
 			defined.add(check);
 			return true;
-		} else if (input.replaceAll(check, "").replaceAll("^[ \t]+", "").equalsIgnoreCase("false"))
+		}
+		else if (input.replaceAll(check, "").replaceAll("^[ \t]+", "").equalsIgnoreCase("false"))
 		{
 			defined.add(check);
 			return false;
-		} else
+		}
+		else
 			throw new IOException("Error: Invalid token; can only be true/false on line ");
 	}
 
@@ -419,11 +455,17 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					throw new NumberFormatException();
 				else
 					return temp;
-			} catch (NumberFormatException e)
+			}
+			catch (NumberFormatException e)
 			{
 				throw new IOException("Error: Invalid token; must be a positive integer on line ");
 			}
 		}
 	}
-
+	
+	public void reload()
+	{
+		loadConfig();
+		loadEffects();
+	}
 }

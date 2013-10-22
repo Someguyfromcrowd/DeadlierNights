@@ -18,3 +18,8 @@ commands:
     usage: /dndecay [positive integer/zero]
     permission: DeadlierNights.set.decay
     permission-message: You don't have permission to use that command!
+  DNreload:
+    description: Reloads settings for DeadlierNights
+    usage: /dnreload
+    permission: DeadlierNights.reload
+    permission-message: You don't have permission to use that command!
