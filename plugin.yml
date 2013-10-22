@@ -1,0 +1,15 @@
+name: DeadlierNights
+main: someguy.deadliernights.DeadlierNights
+version: 0.01
+
+commands:
+  DNchat:
+    description: Enables or disables chat messages for DarkNights
+    usage: /dnchat [true/false]
+    permission: DarkNights.chat.control
+    permission-message: You don't have permission to use that command!
+  DNlog:
+    description: Enables or disables log messages for DarkNights
+    usage: /dnlog [true/false]
+    permission: DarkNights.log.control
+    permission-message: You don't have permission to use that command!
