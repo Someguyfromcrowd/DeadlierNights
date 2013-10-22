@@ -4,12 +4,17 @@ version: 0.01
 
 commands:
   DNchat:
-    description: Enables or disables chat messages for DarkNights
+    description: Enables or disables chat messages for DeadlierNights
     usage: /dnchat [true/false]
-    permission: DarkNights.chat.control
+    permission: DeadlierNights.set.chat
     permission-message: You don't have permission to use that command!
   DNlog:
-    description: Enables or disables log messages for DarkNights
+    description: Enables or disables log messages for DeadlierNights
     usage: /dnlog [true/false]
-    permission: DarkNights.log.control
+    permission: DeadlierNights.set.log
+    permission-message: You don't have permission to use that command!
+  DNdecay:
+    description: Sets the decay rate for DeadlierNights
+    usage: /dndecay [positive integer/zero]
+    permission: DeadlierNights.set.decay
     permission-message: You don't have permission to use that command!

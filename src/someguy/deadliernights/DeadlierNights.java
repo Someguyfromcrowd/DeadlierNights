@@ -145,7 +145,7 @@ public class DeadlierNights extends JavaPlugin implements Listener
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 	{
-		if (cmd.getName().equals("DNchat"))
+		if (cmd.getName().equalsIgnoreCase("DNchat"))
 		{
 			if (args.length == 0)
 			{
@@ -153,8 +153,8 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					sender.sendMessage("[DeadlierNights]: Chat messages are enabled");
 				else
 					sender.sendMessage("[DeadlierNights]: Chat messages are disabled");
-			}
-			if (args[0].equalsIgnoreCase("true"))
+				return true;
+			} else if (args[0].equalsIgnoreCase("true"))
 			{
 				chat = true;
 				sender.sendMessage("[DeadlierNights]: Chat messages enabled.");
@@ -165,10 +165,9 @@ public class DeadlierNights extends JavaPlugin implements Listener
 				sender.sendMessage("[DeadlierNights]: Chat messages disabled.");
 				return true;
 			} else
-			{
 				return false;
-			}
-		} else if (cmd.getName().equals("DNlog"))
+
+		} else if (cmd.getName().equalsIgnoreCase("DNlog"))
 		{
 			if (args.length == 0)
 			{
@@ -176,8 +175,8 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					sender.sendMessage("[DeadlierNights]: Log messages are enabled");
 				else
 					sender.sendMessage("[DeadlierNights]: Log messages are disabled");
-			}
-			if (args[0].equalsIgnoreCase("true"))
+				return true;
+			} else if (args[0].equalsIgnoreCase("true"))
 			{
 				log = true;
 				sender.sendMessage("[DeadlierNights]: Log messages enabled.");
@@ -191,8 +190,31 @@ public class DeadlierNights extends JavaPlugin implements Listener
 			{
 				return false;
 			}
+		} else if (cmd.getName().equalsIgnoreCase("DNDecay"))
+		{
+			if (args.length == 0)
+			{
+				if (decayRate == 0)
+					sender.sendMessage("[DeadlierNights]: Decay is currently disabled.");
+				else
+					sender.sendMessage("[DeadlierNights]: The decay is currently set to " + decayRate + "/sec");
+				return true;
+			} else
+			{
+				try
+				{
+					int input = Integer.parseInt(args[0]);
+					decayRate = input;
+				} catch (NumberFormatException e)
+				{
+					return false;
+				}
+				return true;
+			}
 		} else
+		{
 			return false;
+		}
 
 	}
 
@@ -206,7 +228,6 @@ public class DeadlierNights extends JavaPlugin implements Listener
 			scanner = new Scanner(new File("plugins\\DeadlierNights\\config.txt"));
 			try
 			{
-				
 				String input = "";
 				while (scanner.hasNext())
 				{
@@ -214,17 +235,15 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					input = scanner.nextLine();
 					if (input.contains("decay rate:"))
 					{
-						decayRate = intConfigCheck(input,"decay rate:");
+						decayRate = intConfigCheck(input, "decay rate:");
 						System.out.println(decayRate);
-					}
-					else if (input.contains("chat:"))
+					} else if (input.contains("chat:"))
 					{
 						chat = boolConfigCheck(input, "chat:");
 						System.out.println(chat);
-					}
-					else if (input.contains("log:"))
+					} else if (input.contains("log:"))
 					{
-						log = boolConfigCheck(input, "log:" );
+						log = boolConfigCheck(input, "log:");
 						System.out.println(log);
 					}
 				}
@@ -370,7 +389,7 @@ public class DeadlierNights extends JavaPlugin implements Listener
 
 		return shortest;
 	}
-	
+
 	private boolean boolConfigCheck(String input, String check) throws IOException
 	{
 		if (defined.contains(check))
@@ -379,34 +398,32 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		{
 			defined.add(check);
 			return true;
-		}
-		else if (input.replaceAll(check, "").replaceAll("^[ \t]+", "").equalsIgnoreCase("false"))
+		} else if (input.replaceAll(check, "").replaceAll("^[ \t]+", "").equalsIgnoreCase("false"))
 		{
 			defined.add(check);
 			return false;
-		}
-		else
+		} else
 			throw new IOException("Error: Invalid token; can only be true/false on line ");
 	}
-	
+
 	private int intConfigCheck(String input, String check) throws IOException
 	{
 		if (defined.contains(check))
 			throw new IOException("Error: Setting has already been defined; redefinition occurred on line ");
 		else
 		{
-			try{
+			try
+			{
 				int temp = Integer.parseInt((input.replaceAll(check, "").replaceAll("^[ \t]+", "")));
 				if (temp < 0)
 					throw new NumberFormatException();
 				else
 					return temp;
-			}
-			catch(NumberFormatException e)
+			} catch (NumberFormatException e)
 			{
 				throw new IOException("Error: Invalid token; must be a positive integer on line ");
 			}
 		}
 	}
-	
+
 }
