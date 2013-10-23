@@ -13,6 +13,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+//import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -30,6 +31,7 @@ public class DeadlierNights extends JavaPlugin implements Listener
 	private ArrayList<EffectTimePair> effects;
 	private ArrayList<String> defined;
 	HashMap<String, Integer> playerMap;
+	HashMap<String, Boolean> exemptMap;
 
 	@Override
 	public void onEnable()
@@ -38,10 +40,12 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		loadEffects();
 		shortestDelay = getShortestDelay();
 		playerMap = new HashMap<String, Integer>();
+		exemptMap = new HashMap<String, Boolean>();
 		getServer().getPluginManager().registerEvents(this, this);
 		for (Player player : getServer().getOnlinePlayers())
 		{
 			playerMap.put(player.getName(), 0);
+			exemptMap.put(player.getName(), player.hasPermission("deadliernights.exempt"));
 		}
 
 		@SuppressWarnings("unused")
@@ -52,16 +56,17 @@ public class DeadlierNights extends JavaPlugin implements Listener
 	{
 		for (Player player : getServer().getOnlinePlayers())
 		{
-			if (!playerMap.containsKey(player.getName()))
+			String playerName = player.getName();
+			if (!playerMap.containsKey(playerName))
 			{
-				getLogger().info(player.getName() + " logged in and was added to the list of death");
-				playerMap.put(player.getName(), 0);
+				playerMap.put(playerName, 0);
+				exemptMap.put(playerName, player.hasPermission("deadliernights.exempt"));
 			}
 
-			if (player.getLocation().getBlock().getLightFromBlocks() == 0 && getServer().getWorld(player.getWorld().getName()).getTime() % 24000 >= 14000 && !(player.getGameMode().equals(GameMode.CREATIVE)))
+			if (!exemptMap.get(playerName).booleanValue() && player.getLocation().getBlock().getLightFromBlocks() == 0 && getServer().getWorld(player.getWorld().getName()).getTime() % 24000 >= 14000 && !(player.getGameMode().equals(GameMode.CREATIVE)))
 			{
-				playerMap.put(player.getName(), playerMap.get(player.getName()) + 1);
-				int current = playerMap.get(player.getName());
+				playerMap.put(playerName, playerMap.get(playerName) + 1);
+				int current = playerMap.get(playerName);
 
 				for (EffectTimePair pair : effects)
 				{
@@ -72,27 +77,27 @@ public class DeadlierNights extends JavaPlugin implements Listener
 						{
 							player.addPotionEffect(new PotionEffect(pair.getEffect(), Integer.MAX_VALUE, pair.getLevel()));
 							if (log)
-								getLogger().info("Applied " + pair.getEffect().getName() + " " + pair.getLevel() + " to " + player.getName());
+								getLogger().info("Applied " + pair.getEffect().getName() + " " + pair.getLevel() + " to " + playerName);
 						}
 					}
 					else if (pair.getDelay() == current)
 					{
 						player.addPotionEffect(new PotionEffect(pair.getEffect(), Integer.MAX_VALUE, pair.getLevel()));
 						if (log)
-							getLogger().info("Applied " + pair.getEffect().getName() + " " + pair.getLevel() + " to " + player.getName());
+							getLogger().info("Applied " + pair.getEffect().getName() + " " + pair.getLevel() + " to " + playerName);
 						if (chat)
 							player.sendMessage(pair.getText());
 					}
 				}
 			}
-			else if (playerMap.get(player.getName()) > 0)
+			else if (playerMap.get(playerName) > 0)
 			{
 				if (decayRate == 0)
 				{
-					if (playerMap.get(player.getName()) >= shortestDelay)
+					if (playerMap.get(playerName) >= shortestDelay)
 					{
 						if (log)
-							getLogger().info("Debuffs removed from " + player.getName());
+							getLogger().info("Debuffs removed from " + playerName);
 						if (chat)
 							player.sendMessage("You escape from the darkness.");
 						for (EffectTimePair pair : effects)
@@ -100,18 +105,18 @@ public class DeadlierNights extends JavaPlugin implements Listener
 							player.removePotionEffect(pair.getEffect());
 						}
 					}
-					playerMap.put(player.getName(), 0);
+					playerMap.put(playerName, 0);
 				}
 				else
 				{
 					boolean dropped = true;
-					if (playerMap.get(player.getName()) < shortestDelay)
+					if (playerMap.get(playerName) < shortestDelay)
 						dropped = false;
-					playerMap.put(player.getName(), playerMap.get(player.getName()) - decayRate);
-					if (playerMap.get(player.getName()) < 0)
-						playerMap.put(player.getName(), 0);
-					System.out.println(player.getName() + " is down to " + playerMap.get(player.getName()) + " seconds");
-					if (playerMap.get(player.getName()) >= shortestDelay)
+					playerMap.put(playerName, playerMap.get(player.getName()) - decayRate);
+					if (playerMap.get(playerName) < 0)
+						playerMap.put(playerName, 0);
+					System.out.println(playerName + " is down to " + playerMap.get(player.getName()) + " seconds");
+					if (playerMap.get(playerName) >= shortestDelay)
 						dropped = false;
 					if (dropped)
 					{
@@ -119,7 +124,7 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					}
 					for (EffectTimePair pair : effects)
 					{
-						if (player.hasPotionEffect(pair.getEffect()) && playerMap.get(player.getName()) < pair.getDelay())
+						if (player.hasPotionEffect(pair.getEffect()) && playerMap.get(playerName) < pair.getDelay())
 						{
 							player.removePotionEffect(pair.getEffect());
 							if (chat && !pair.getOffText().equals(""))
@@ -154,6 +159,20 @@ public class DeadlierNights extends JavaPlugin implements Listener
 			}
 		}
 	}
+	
+	//TODO: Implement some various creature spawn mechanics (after pushing 0.02a)
+	
+	/*public void onCreatureSpawn(CreatureSpawnEvent event)
+	{
+		for (Player player : getServer().getOnlinePlayers())
+		{
+			if (!playerMap.containsKey(player.getName()))
+			{
+				getLogger().info(player.getName() + " logged in and was added to the list of death");
+				playerMap.put(player.getName(), 0);
+			}
+		}
+	}*/
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
@@ -239,6 +258,85 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		{
 			reload();
 			return true;
+		}
+		else if (cmd.getName().equalsIgnoreCase("DNexempt"))
+		{
+			if (args.length == 0)
+			{
+				if (exemptMap.get(sender.getName()).booleanValue())
+					sender.sendMessage("[DeadlierNights]: You are immune to negative debuffs");
+				else
+					sender.sendMessage("[DeadlierNights]: You are not immune to negative debuffs");
+				return true;
+			}
+			else if (args[0].equalsIgnoreCase("true"))
+			{
+				exemptMap.put(sender.getName(), Boolean.TRUE);
+				sender.sendMessage("[DeadlierNights]: You are now immune to negative debuffs.");
+				return true;
+			}
+			else if (args[0].equalsIgnoreCase("false"))
+			{
+				exemptMap.put(sender.getName(), Boolean.FALSE);
+				sender.sendMessage("[DeadlierNights]: You are no longer immune to negative debuffs.");
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else if (cmd.getName().equalsIgnoreCase("DNexempto"))
+		{
+			if (args.length == 0)
+			{
+				return false;
+			}
+			else
+			{
+				String playerName = pickPlayer(args[0]);
+				if (playerName.equals("<FAILED>"))
+				{
+					sender.sendMessage("[DeadlierNights]: Couldn't pick a player with that name.");
+					return false;
+				}
+				else
+				{
+					if (args.length == 1)
+					{
+						if (exemptMap.get(playerName).booleanValue())
+						{
+							sender.sendMessage("[DeadlierNights]: " + playerName + " is exempt from debuffs");
+							return true;
+						}
+						else
+						{
+							sender.sendMessage("[DeadlierNights]: " + playerName + " is not exempt from debuffs");
+							return true;
+						}
+					}
+					else if (args.length == 2)
+					{
+						if (args[1].equalsIgnoreCase("true"))
+						{
+							exemptMap.put(playerName, Boolean.TRUE);
+							sender.sendMessage("[DeadlierNights]: " + playerName + " is now exempt from debuffs");
+							return true;
+						}
+						else if (args[1].equalsIgnoreCase("false"))
+						{
+							exemptMap.put(playerName, Boolean.FALSE);
+							sender.sendMessage("[DeadlierNights]: " + playerName + " is no longer exempt from debuffs");
+							return true;
+						}
+						else
+							return false;
+					}
+					else
+						return false;
+				}
+				
+			}
 		}
 		else
 		{
@@ -467,5 +565,23 @@ public class DeadlierNights extends JavaPlugin implements Listener
 	{
 		loadConfig();
 		loadEffects();
+	}
+	
+	public String pickPlayer(String match)
+	{
+		int count = 0;
+		String possible = "";
+		for (Player player : getServer().getOnlinePlayers())
+		{
+			if (player.getName().toLowerCase().startsWith(match.toLowerCase()))
+			{
+				possible = player.getName();
+				count++;
+			}
+		}
+		if (count==1)
+			return possible;
+		else
+			return "<FAILED>";
 	}
 }

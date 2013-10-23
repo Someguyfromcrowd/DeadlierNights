@@ -1,6 +1,7 @@
 name: DeadlierNights
 main: someguy.deadliernights.DeadlierNights
 version: 0.01
+author: Someguyfromcrowd
 
 commands:
   DNchat:
@@ -23,3 +24,35 @@ commands:
     usage: /dnreload
     permission: DeadlierNights.reload
     permission-message: You don't have permission to use that command!
+  DNexempt:
+    description: Gives the player immunity to DeadlierNights' effects
+    usage: /dnexempt [true/false]
+    permission: DeadlierNights.exempt
+    permission-message: You don't have permission to use that command!
+  DNexempto:
+    description: Gives another player immunity to DeadlierNights' effects
+    usage: /dnexempto [name] [true/false]
+    permission: DeadlierNights.exempt.others
+    permission-message: You don't have permission to use that command!
+
+permissions:
+   deadliernights.*:
+     description: Gives access to all commands
+     children:
+       deadliernights.set.chat: true
+       deadliernights.set.log: true
+       deadliernights.set.decay: true
+       deadliernights.reload: true
+     default: op
+   deadliernights.set.chat:
+     description: Allows toggling of chat messages for players
+   deadliernights.set.log:
+     description: Allows toggling of log messages
+   deadliernights.set.decay:
+     description: Allows for the exposure decay rate to be set
+   deadliernights.reload:
+     description: Allows for reloading of DeadlierNights' configuration files
+   deadliernights.exempt:
+     description: Allows the player to make him/her self immune to DeadlierNights' debuffs
+   deadliernights.exempt.others:
+     description: As with exempt, but also allows for other players to be affected
