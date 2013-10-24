@@ -19,6 +19,16 @@ commands:
     usage: /dndecay [positive integer/zero]
     permission: DeadlierNights.set.decay
     permission-message: You don't have permission to use that command!
+  DNpotion:
+    description: Enables or disables potion debuffs
+    usage: /dnpotion [true/false]
+    permission: DeadlierNights.set.potion
+    permission-message: You don't have permission to use that command!
+  DNmob:
+    description: Enables or disables mob buffs
+    usage: /dnmob [true/false]
+    permission: DeadlierNights.set.mob
+    permission-message: You don't have permission to use that command!
   DNreload:
     description: Reloads settings for DeadlierNights
     usage: /dnreload
@@ -42,14 +52,30 @@ permissions:
        deadliernights.set.chat: true
        deadliernights.set.log: true
        deadliernights.set.decay: true
+       deadliernights.set.potion: true
+       deadliernights.set.mob: true
        deadliernights.reload: true
+       deadliernights.exempt: true
+       deadliernights.exempt.others: true
      default: op
+   deadliernights.set.*:
+     description: Gives access to all set commands
+     children:
+       deadliernights.set.chat: true
+       deadliernights.set.log: true
+       deadliernights.set.decay: true
+       deadliernights.set.potion: true
+       deadliernights.set.mob: true
    deadliernights.set.chat:
      description: Allows toggling of chat messages for players
    deadliernights.set.log:
      description: Allows toggling of log messages
    deadliernights.set.decay:
      description: Allows for the exposure decay rate to be set
+   deadliernights.set.potion:
+     description: Allows for the toggling of potion debuffs
+   deadliernights.set.mob:
+     description: Allows for the toggling of mob buffs
    deadliernights.reload:
      description: Allows for reloading of DeadlierNights' configuration files
    deadliernights.exempt:
