@@ -1,6 +1,6 @@
 name: DeadlierNights
 main: someguy.deadliernights.DeadlierNights
-version: 0.02a
+version: 0.03a
 author: Someguyfromcrowd
 
 commands:
