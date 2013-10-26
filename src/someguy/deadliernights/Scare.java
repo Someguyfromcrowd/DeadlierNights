@@ -14,6 +14,7 @@ public class Scare
 	private ScareType type;
 	private int delay;
 	private int frequency; //how many seconds should pass between checks
+	private int extraFrequency; //random extra delay
 	private double probability; //chance of happening per frequency; 0..1
 	
 	/* FAKESOUND */
@@ -37,9 +38,11 @@ public class Scare
 	 */
 	/* FAKEHURT */
 
-	public Scare(ScareType type, int delay, int frequency, double probability, String soundToPlay, int volume, int range)
+	public Scare(ScareType type, int delay, int frequency, int extraFrequency, double probability, String soundToPlay, int volume, int range)
 	{
+		this.type = type;
 		this.delay = delay;
+		this.extraFrequency = extraFrequency;
 		this.frequency = frequency;
 		this.probability = probability;
 		if (type.equals(ScareType.FAKESOUND))
@@ -99,6 +102,14 @@ public class Scare
 	}
 	
 	/**
+	 * @return a random integer equal to [0,extraFrequency]
+	 */
+	public int getExtraFrequencyRandom()
+	{
+		return (int) Math.random()*extraFrequency;
+	}
+	
+	/**
 	 * @return the sound which the scare will play
 	 */
 	public String getSoundToPlay()
@@ -137,5 +148,11 @@ public class Scare
 	public boolean triggerScare()
 	{
 		return (Math.random() < probability);
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return (type.hashCode() << 5) * (delay + 259296436 % 7879) * 31;
 	}
 }

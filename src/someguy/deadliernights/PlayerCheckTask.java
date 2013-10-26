@@ -25,5 +25,6 @@ public class PlayerCheckTask extends BukkitRunnable
 	public void run()
 	{
 		plugin.checkPlayers();
+		plugin.scarePlayers();
 	}
 }
