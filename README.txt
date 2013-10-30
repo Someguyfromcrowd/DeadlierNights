@@ -35,6 +35,21 @@ healthMult: a number by which to multiply the affected mob's health
 canDrown: whether or not the mob can drown
 autoChase: whether or not the mob should automatically give chase to the player who caused it to be buffed (experimental)
 
+Multiple mobs and effects can be specified; one per line
+
+scares.txt:
+
+type: the type of scare (currently only FAKESOUND)
+delay: how long it takes until the scare can occur
+frequency: the minimum interval between scares in seconds
+extrafrequency: a random amount to add to the interval in seconds
+
+FAKESOUND-
+
+sound: the type of sound to play (currently, bukkit's enums must be used: http://jd.bukkit.org/rb/apidocs/org/bukkit/Sound.html)
+range: how far away the sound can play in both the x and z directions
+
+
 =====
 
 If anything breaks, you can just delete the config files and new ones will be created in their place.

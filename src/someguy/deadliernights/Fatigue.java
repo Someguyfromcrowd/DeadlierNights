@@ -10,5 +10,5 @@ package someguy.deadliernights;
  */
 public class Fatigue
 {
-
+	//Unimplemented
 }

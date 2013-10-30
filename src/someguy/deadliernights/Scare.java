@@ -23,7 +23,7 @@ public class Scare
 	private int range;
 	
 	/* FAKEMOB */
-	EntityType mobToShow;
+	EntityType mobType;
 
 	/**
 	 * Constructs a FAKESOUND Scare
@@ -31,12 +31,12 @@ public class Scare
 	 * @param type
 	 * @param delay 
 	 * @param frequency 
+	 * @param extraFrequency 
 	 * @param probability 
 	 * @param soundToPlay 
 	 * @param volume 
 	 * @param range 
 	 */
-	/* FAKEHURT */
 
 	public Scare(ScareType type, int delay, int frequency, int extraFrequency, double probability, String soundToPlay, int volume, int range)
 	{
@@ -62,18 +62,25 @@ public class Scare
 	/**
 	 * @param type
 	 * @param delay
-	 * @param arg0
+	 * @param frequency 
+	 * @param extraFrequency 
+	 * @param probability 
+	 * @param mobType
 	 */
-	public Scare(ScareType type, int delay, EntityType arg0)
+	public Scare(ScareType type, int delay, int frequency, int extraFrequency, double probability, EntityType mobType)
 	{
+		this.type = type;
 		this.delay = delay;
+		this.extraFrequency = extraFrequency;
+		this.frequency = frequency;
+		this.probability = probability;
 		if (type.equals(ScareType.FAKEMOB))
 		{
-			this.mobToShow = arg0;
+			this.mobType = mobType;
 		}
 		else
 		{
-			this.mobToShow=EntityType.ZOMBIE;
+			this.mobType=EntityType.ZOMBIE;
 		}
 	}
 	
@@ -110,6 +117,14 @@ public class Scare
 	}
 	
 	/**
+	 * @return whether or not the scare should trigger
+	 */
+	public boolean triggerScare()
+	{
+		return (Math.random() < probability);
+	}
+	
+	/**
 	 * @return the sound which the scare will play
 	 */
 	public String getSoundToPlay()
@@ -140,14 +155,6 @@ public class Scare
 			return range;
 		else
 			return 0;
-	}
-	
-	/**
-	 * @return whether or not the scare should trigger
-	 */
-	public boolean triggerScare()
-	{
-		return (Math.random() < probability);
 	}
 	
 	@Override

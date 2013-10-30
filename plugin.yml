@@ -1,6 +1,6 @@
 name: DeadlierNights
 main: someguy.deadliernights.DeadlierNights
-version: 0.03a
+version: 0.04a
 author: Someguyfromcrowd
 
 commands:
@@ -14,11 +14,6 @@ commands:
     usage: /dnlog [true/false]
     permission: DeadlierNights.set.log
     permission-message: You don't have permission to use that command!
-  DNdecay:
-    description: Sets the decay rate for DeadlierNights
-    usage: /dndecay [positive integer/zero]
-    permission: DeadlierNights.set.decay
-    permission-message: You don't have permission to use that command!
   DNpotion:
     description: Enables or disables potion debuffs
     usage: /dnpotion [true/false]
@@ -28,6 +23,21 @@ commands:
     description: Enables or disables mob buffs
     usage: /dnmob [true/false]
     permission: DeadlierNights.set.mob
+    permission-message: You don't have permission to use that command!
+  DNscare:
+    description: Enables or disables scares
+    usage: /dnscare [true/false]
+    permission: DeadlierNights.set.scare
+    permission-message: You don't have permission to use that command!
+  DNfatigue:
+    description: Enables or disables fatigue
+    usage: /dnfatigue [true/false]
+    permission: DeadlierNights.set.fatigue
+    permission-message: You don't have permission to use that command!
+  DNdecay:
+    description: Sets the decay rate for DeadlierNights
+    usage: /dndecay [positive integer/zero]
+    permission: DeadlierNights.set.decay
     permission-message: You don't have permission to use that command!
   DNreload:
     description: Reloads settings for DeadlierNights
@@ -44,6 +54,16 @@ commands:
     usage: /dnexempto [name] [true/false]
     permission: DeadlierNights.exempt.others
     permission-message: You don't have permission to use that command!
+  DNcure:
+    description: Cures a player of exposure
+    usage: /dnheal [name]
+    permission: DeadlierNights.cure
+    permission-message: You don't have permission to use that command!
+  DNhelp:
+    description: Provides information about DeadlierNights
+    usage: /dnhelp [topic]
+    permission: DeadlierNights.help
+    permission-message: You don't have permission to use that command!
 
 permissions:
    deadliernights.*:
@@ -51,34 +71,48 @@ permissions:
      children:
        deadliernights.set.chat: true
        deadliernights.set.log: true
-       deadliernights.set.decay: true
        deadliernights.set.potion: true
        deadliernights.set.mob: true
+       deadliernights.set.scare: true
+       deadliernights.set.fatigue: true
+       deadliernights.set.decay: true
        deadliernights.reload: true
        deadliernights.exempt: true
        deadliernights.exempt.others: true
+       deadliernights.cure: true
      default: op
    deadliernights.set.*:
      description: Gives access to all set commands
      children:
        deadliernights.set.chat: true
        deadliernights.set.log: true
-       deadliernights.set.decay: true
        deadliernights.set.potion: true
        deadliernights.set.mob: true
+       deadliernights.set.scare: true
+       deadliernights.set.fatigue: true
+       deadliernights.set.decay: true
    deadliernights.set.chat:
      description: Allows toggling of chat messages for players
    deadliernights.set.log:
      description: Allows toggling of log messages
-   deadliernights.set.decay:
-     description: Allows for the exposure decay rate to be set
    deadliernights.set.potion:
      description: Allows for the toggling of potion debuffs
    deadliernights.set.mob:
      description: Allows for the toggling of mob buffs
+   deadliernights.set.scare:
+     description: Allows for toggling of scares
+   deadliernights.set.fatigue:
+     description: Allows for toggling of fatigue
+   deadliernights.set.decay:
+     description: Allows for the exposure decay rate to be set
    deadliernights.reload:
      description: Allows for reloading of DeadlierNights' configuration files
    deadliernights.exempt:
      description: Allows the player to make him/her self immune to DeadlierNights' debuffs
    deadliernights.exempt.others:
      description: As with exempt, but also allows for other players to be affected
+   deadliernights.cure:
+     description: Allows for the curing of players
+   deadliernights.help:
+     description: Allows for the lookup of information about DeadlierNights
+     default: true

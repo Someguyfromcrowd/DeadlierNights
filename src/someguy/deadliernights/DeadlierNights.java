@@ -17,6 +17,7 @@ import org.bukkit.entity.Creature;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
@@ -75,7 +76,7 @@ public class DeadlierNights extends JavaPlugin implements Listener
 			scareMap.put(player.getName(), new HashMap<Scare, Integer>());
 			for (Scare scare : scares)
 			{
-				scareMap.get(player.getName()).put(scare,-1*scare.getExtraFrequencyRandom());
+				scareMap.get(player.getName()).put(scare, -1 * scare.getExtraFrequencyRandom());
 			}
 		}
 
@@ -100,14 +101,13 @@ public class DeadlierNights extends JavaPlugin implements Listener
 				scareMap.put(playerName, new HashMap<Scare, Integer>());
 				for (Scare scare : scares)
 				{
-					scareMap.get(playerName).put(scare,-1*scare.getExtraFrequencyRandom());
+					scareMap.get(playerName).put(scare, -1 * scare.getExtraFrequencyRandom());
 				}
 			}
 
 			if (!exemptMap.get(playerName).booleanValue() && getServer().getWorld(player.getWorld().getName()).getTime() % 24000 >= 14000 && player.getLocation().getBlock().getLightFromBlocks() == 0 && !(player.getGameMode().equals(GameMode.CREATIVE)))
 			{
 				playerMap.put(playerName, playerMap.get(playerName) + 1);
-				System.out.println("spoopiness intensifies to " + playerMap.get(playerName));
 				int current = playerMap.get(playerName);
 
 				if (potionEnable)
@@ -119,15 +119,14 @@ public class DeadlierNights extends JavaPlugin implements Listener
 						{
 							if (!player.hasPotionEffect(pair.getEffect()))
 							{
-								player.addPotionEffect(new PotionEffect(pair.getEffect(), Integer.MAX_VALUE, pair.getLevel()));
+								player.addPotionEffect(new PotionEffect(pair.getEffect(), Integer.MAX_VALUE, pair.getLevel()), true);
 								if (log)
 									getLogger().info("Applied " + pair.getEffect().getName() + " " + pair.getLevel() + " to " + playerName);
 							}
 						}
 						else if (pair.getDelay() == current)
 						{
-							System.out.println("spoopy pls");
-							player.addPotionEffect(new PotionEffect(pair.getEffect(), Integer.MAX_VALUE, pair.getLevel()));
+							player.addPotionEffect(new PotionEffect(pair.getEffect(), Integer.MAX_VALUE, pair.getLevel()), true);
 							if (log)
 								getLogger().info("Applied " + pair.getEffect().getName() + " " + pair.getLevel() + " to " + playerName);
 							if (chat && !pair.getText().equals(""))
@@ -175,7 +174,7 @@ public class DeadlierNights extends JavaPlugin implements Listener
 	}
 
 	/**
-	 * Reacts to entity spawns by applying potion effects if needed
+	 * Reacts to monster spawns by applying potion effects if needed
 	 * 
 	 * @param e
 	 */
@@ -195,21 +194,18 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					scareMap.put(playerName, new HashMap<Scare, Integer>());
 					for (Scare scare : scares)
 					{
-						scareMap.get(playerName).put(scare,-1*scare.getExtraFrequencyRandom());
+						scareMap.get(playerName).put(scare, -1 * scare.getExtraFrequencyRandom());
 					}
 				}
 				if (player.getLocation().distance(e.getLocation()) <= 32)
 				{
-					// System.out.println("sensed");
 					for (MobBuff buff : mobBuffs)
 					{
 						if (buff.getMobs().contains(e.getEntityType()) && buff.getDelay() < playerMap.get(player.getName()))
 						{
-							// System.out.println("triggered");
 							for (PotionEffect eff : buff.getBuffs())
 							{
-								// System.out.println("added");
-								e.getEntity().addPotionEffect(eff);
+								e.getEntity().addPotionEffect(eff, true);
 							}
 
 							if (buff.getHealthMult() != 1)
@@ -222,8 +218,6 @@ public class DeadlierNights extends JavaPlugin implements Listener
 								((Creature) e.getEntity()).setTarget(player);
 
 						}
-						else
-							System.out.println(buff.getDelay() - playerMap.get(player.getName()));
 					}
 				}
 			}
@@ -248,7 +242,7 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					scareMap.put(playerName, new HashMap<Scare, Integer>());
 					for (Scare scare : scares)
 					{
-						scareMap.get(playerName).put(scare,-1*scare.getExtraFrequencyRandom());
+						scareMap.get(playerName).put(scare, -1 * scare.getExtraFrequencyRandom());
 					}
 				}
 
@@ -261,19 +255,15 @@ public class DeadlierNights extends JavaPlugin implements Listener
 							if (scare.getType().equals(ScareType.FAKESOUND))
 							{
 								int randomX = player.getLocation().getBlockX() + ((int) (2 * Math.random() * scare.getRange())) - scare.getRange();
-								int randomY = player.getLocation().getBlockY() + ((int) (2 * Math.random() * scare.getRange())) - scare.getRange();
-								int randomZ = player.getLocation().getBlockZ();
+								int randomY = player.getLocation().getBlockY();
+								int randomZ = player.getLocation().getBlockZ() + ((int) (2 * Math.random() * scare.getRange())) - scare.getRange();
 								player.playSound(new Location(player.getWorld(), randomX, randomY, randomZ), Sound.valueOf(scare.getSoundToPlay().toUpperCase()), 1, 1);
-								System.out.println("BASPINGO");
-								// TODO: Figure out if Bukkit can be used
-								// instead
 							}
-							scareMap.get(playerName).put(scare, -1*scare.getExtraFrequencyRandom());
+							scareMap.get(playerName).put(scare, -1 * scare.getExtraFrequencyRandom());
 						}
 						else
 						{
 							scareMap.get(playerName).put(scare, scareMap.get(playerName).get(scare) + 1);
-							System.out.println("augmenting spoopiness up to " + scareMap.get(playerName).get(scare));
 						}
 					}
 				}
@@ -284,21 +274,37 @@ public class DeadlierNights extends JavaPlugin implements Listener
 	/**
 	 * @param event
 	 */
-	@EventHandler
+	@EventHandler(priority = EventPriority.MONITOR)
 	public void onGamemodeChange(PlayerGameModeChangeEvent event)
 	{
-		if (playerMap.containsKey(event.getPlayer().getName()))
+		if (event.getNewGameMode().equals(GameMode.CREATIVE))
 		{
-			playerMap.put(event.getPlayer().getName(), 0);
+			if (playerMap.containsKey(event.getPlayer().getName()))
+			{
+				playerMap.put(event.getPlayer().getName(), 0);
+				curePlayer(event.getPlayer());
+			}
 		}
+			
 	}
 
 	/**
 	 * @param event
 	 */
-	@EventHandler
+	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerRespawn(PlayerRespawnEvent event)
 	{
+		String playerName = event.getPlayer().getName();
+		if (!playerMap.containsKey(playerName))
+		{
+			playerMap.put(playerName, 0);
+			exemptMap.put(playerName, event.getPlayer().hasPermission("deadliernights.exempt"));
+			scareMap.put(playerName, new HashMap<Scare, Integer>());
+			for (Scare scare : scares)
+			{
+				scareMap.get(playerName).put(scare, -1 * scare.getExtraFrequencyRandom());
+			}
+		}
 		playerMap.put(event.getPlayer().getName(), 0);
 		for (EffectTimePair pair : effects)
 		{
@@ -312,9 +318,20 @@ public class DeadlierNights extends JavaPlugin implements Listener
 	/**
 	 * @param event
 	 */
-	@EventHandler
+	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerLogin(PlayerJoinEvent event)
 	{
+		String playerName = event.getPlayer().getName();
+		if (!playerMap.containsKey(playerName))
+		{
+			playerMap.put(playerName, 0);
+			exemptMap.put(playerName, event.getPlayer().hasPermission("deadliernights.exempt"));
+			scareMap.put(playerName, new HashMap<Scare, Integer>());
+			for (Scare scare : scares)
+			{
+				scareMap.get(playerName).put(scare, -1 * scare.getExtraFrequencyRandom());
+			}
+		}
 		for (EffectTimePair pair : effects)
 		{
 			if (event.getPlayer().hasPotionEffect(pair.getEffect()) && playerMap.get(event.getPlayer().getName()) < pair.getDelay())
@@ -327,9 +344,20 @@ public class DeadlierNights extends JavaPlugin implements Listener
 	/**
 	 * @param event
 	 */
-	@EventHandler
+	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerLogout(PlayerQuitEvent event)
 	{
+		String playerName = event.getPlayer().getName();
+		if (!playerMap.containsKey(playerName))
+		{
+			playerMap.put(playerName, 0);
+			exemptMap.put(playerName, event.getPlayer().hasPermission("deadliernights.exempt"));
+			scareMap.put(playerName, new HashMap<Scare, Integer>());
+			for (Scare scare : scares)
+			{
+				scareMap.get(playerName).put(scare, -1 * scare.getExtraFrequencyRandom());
+			}
+		}
 		for (EffectTimePair pair : effects)
 		{
 			if (event.getPlayer().hasPotionEffect(pair.getEffect()) && playerMap.get(event.getPlayer().getName()) < pair.getDelay())
@@ -417,6 +445,29 @@ public class DeadlierNights extends JavaPlugin implements Listener
 				{
 					potionEnable = false;
 					sender.sendMessage("[DeadlierNights]: Potion debuffs disabled.");
+
+					for (Player player : getServer().getOnlinePlayers())
+					{
+						String playerName = player.getName();
+						if (!playerMap.containsKey(playerName))
+						{
+							playerMap.put(playerName, 0);
+							exemptMap.put(playerName, player.hasPermission("deadliernights.exempt"));
+							scareMap.put(playerName, new HashMap<Scare, Integer>());
+							for (Scare scare : scares)
+							{
+								scareMap.get(player.getName()).put(scare, -1 * scare.getExtraFrequencyRandom());
+							}
+						}
+
+						for (EffectTimePair pair : effects)
+							if (player.hasPotionEffect(pair.getEffect()) && playerMap.get(player.getName()) >= pair.getDelay())
+							{
+								player.removePotionEffect(pair.getEffect());
+							}
+
+					}
+
 					return true;
 				}
 				else
@@ -445,6 +496,62 @@ public class DeadlierNights extends JavaPlugin implements Listener
 				{
 					mobEnable = false;
 					sender.sendMessage("[DeadlierNights]: Mob buffs disabled.");
+					return true;
+				}
+				else
+					return false;
+			}
+		}
+		else if (cmd.getName().equalsIgnoreCase("DNscare"))
+		{
+			if (args.length == 0)
+			{
+				if (scareEnable)
+					sender.sendMessage("[DeadlierNights]: Scares are enabled");
+				else
+					sender.sendMessage("[DeadlierNights]: Scares are disabled");
+				return true;
+			}
+			else
+			{
+				if (args[0].equalsIgnoreCase("true") || args[0].equalsIgnoreCase("enable") || args[0].equalsIgnoreCase("on"))
+				{
+					scareEnable = true;
+					sender.sendMessage("[DeadlierNights]: Scares enabled.");
+					return true;
+				}
+				else if (args[0].equalsIgnoreCase("false") || args[0].equalsIgnoreCase("disable") || args[0].equalsIgnoreCase("off"))
+				{
+					scareEnable = false;
+					sender.sendMessage("[DeadlierNights]: Scares disabled.");
+					return true;
+				}
+				else
+					return false;
+			}
+		}
+		else if (cmd.getName().equalsIgnoreCase("DNfatigue"))
+		{
+			if (args.length == 0)
+			{
+				if (fatigueEnable)
+					sender.sendMessage("[DeadlierNights]: Fatigue is enabled");
+				else
+					sender.sendMessage("[DeadlierNights]: Fatigue is disabled");
+				return true;
+			}
+			else
+			{
+				if (args[0].equalsIgnoreCase("true") || args[0].equalsIgnoreCase("enable") || args[0].equalsIgnoreCase("on"))
+				{
+					fatigueEnable = true;
+					sender.sendMessage("[DeadlierNights]: Fatigue enabled.");
+					return true;
+				}
+				else if (args[0].equalsIgnoreCase("false") || args[0].equalsIgnoreCase("disable") || args[0].equalsIgnoreCase("off"))
+				{
+					fatigueEnable = false;
+					sender.sendMessage("[DeadlierNights]: Fatigue disabled.");
 					return true;
 				}
 				else
@@ -563,20 +670,44 @@ public class DeadlierNights extends JavaPlugin implements Listener
 
 			}
 		}
-		else if (cmd.getName().equalsIgnoreCase("DNheal"))
+		else if (cmd.getName().equalsIgnoreCase("DNcure"))
 		{
 			if (args.length >= 1)
 			{
-				String playerName = pickPlayer(args[0]);
-				playerMap.put(playerName, 0);
-				for (EffectTimePair pair : effects)
-				{
-					if (getServer().getPlayer("playerName").hasPotionEffect(pair.getEffect()) && playerMap.get(getServer().getPlayer("playerName").getName()) < pair.getDelay())
-					{
-						getServer().getPlayer("playerName").removePotionEffect(pair.getEffect());
-					}
-				}
+				Player player = getServer().getPlayer(pickPlayer(args[0]));
+				this.curePlayer(player);
 				return true;
+			}
+			else
+			{
+				Player player = getServer().getPlayer(sender.getName());
+				this.curePlayer(player);
+				return true;
+			}
+		}
+		else if (cmd.getName().equalsIgnoreCase("DNhelp"))
+		{
+			if (args.length == 0)
+			{
+				sender.sendMessage("[DeadlierNights]: For help, type one of the following commands:");
+				sender.sendMessage("Info: /dnhelp info");
+				sender.sendMessage("Version: /dnhelp version");
+				return true;
+			}
+			else if (args.length >= 1)
+			{
+				if (args[0].equalsIgnoreCase("info"))
+				{
+					sender.sendMessage("DeadlierNights is a plugin designed to make nighttime survival more difficult. Staying in the dark for too long at night can afflict you with debuffs, make mobs stronger, and more.");
+					return true;
+				}
+				else if (args[0].equalsIgnoreCase("version"))
+				{
+					sender.sendMessage("The current version of DeadlierNights is " + this.getDescription().getVersion());
+					return true;
+				}
+				else
+					return false;
 			}
 			else
 				return false;
@@ -587,8 +718,6 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		}
 
 	}
-
-	// TODO: Improve line-number reporting
 
 	private void loadConfig()
 	{
@@ -603,40 +732,39 @@ public class DeadlierNights extends JavaPlugin implements Listener
 				String input = "";
 				while (scanner.hasNext())
 				{
-					line++;
-					input = scanner.nextLine();
-					if (input.contains("decay rate:"))
+					try
 					{
-						decayRate = intConfigCheck(input, "decay rate:");
-						if (decayRate < 0)
-							throw new IOException("Error: decay rate must have a value greater or equal to zero on line " + line);
+						line++;
+						input = scanner.nextLine();
+						if (input.contains("decay rate:"))
+						{
+							decayRate = intConfigCheck(input, "decay rate:");
+							if (decayRate < 0)
+								throw new DNConfigException("Error: decay rate must have a value greater or equal to zero on line " + line);
+						}
+
+						else if (input.contains("chat:"))
+							chat = boolConfigCheck(input, "chat:");
+						else if (input.contains("log:"))
+							log = boolConfigCheck(input, "log:");
+						else if (input.contains("potionDebuff:"))
+							potionEnable = boolConfigCheck(input, "potionDebuff:");
+						else if (input.contains("mobBuff:"))
+							mobEnable = boolConfigCheck(input, "mobBuff:");
+						else if (input.contains("scare:"))
+							scareEnable = boolConfigCheck(input, "scare:");
+						else if (input.contains("fatigue:"))
+							fatigueEnable = boolConfigCheck(input, "fatigue:");
 					}
-
-					// TODO: Replace the IOException with something more
-					// specific (custom exception type?)
-
-					else if (input.contains("chat:"))
-						chat = boolConfigCheck(input, "chat:");
-					else if (input.contains("log:"))
-						log = boolConfigCheck(input, "log:");
-					else if (input.contains("potionDebuff:"))
-						potionEnable = boolConfigCheck(input, "potionDebuff:");
-					else if (input.contains("mobBuff:"))
-						mobEnable = boolConfigCheck(input, "mobBuff:");
-					else if (input.contains("scare:"))
-						scareEnable = boolConfigCheck(input, "scare:");
-					else if (input.contains("fatigue:"))
-						fatigueEnable = boolConfigCheck(input, "fatigue:");
+					catch (DNConfigException e)
+					{
+						getLogger().warning(e.getMessage() + line);
+					}
+					catch (NumberFormatException e)
+					{
+						getLogger().warning("Error: Can't read an entry in config.txt (is there a typo on line " + line + "?)");
+					}
 				}
-			}
-			catch (NumberFormatException e)
-			{
-				System.out.println(e);
-				getLogger().warning("Error: Can't read config.txt (is there a typo on line " + line + "?)");
-			}
-			catch (IOException e)
-			{
-				System.out.println(e.getMessage() + line);
 			}
 			finally
 			{
@@ -671,10 +799,9 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		}
 	}
 
-	// TODO: Improve line-number reporting
-
 	private void loadEffects()
 	{
+		boolean ready = true;
 		effects = new ArrayList<EffectTimePair>();
 		Scanner scanner;
 		int line = 0;
@@ -692,46 +819,50 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					int newLevel = 0;
 					String newText = "";
 					String newOffText = "";
-					while (!done)
+					if (!ready)
+						ready = scanner.nextLine().contains("---");
+					while (ready && !done)
 					{
-						line++;
-						input = scanner.nextLine();
-						if (input.contains("delay:"))
+						try
 						{
-							newDelay = Integer.parseInt(input.replaceAll("delay:", "").replaceAll("^[ \t]+", ""));
-							if (newDelay <= 0)
-								throw new IOException("Error: delay must have a value greater than zero on line " + line);
-						}
+							line++;
+							input = scanner.nextLine();
+							if (input.contains("delay:"))
+							{
+								newDelay = Integer.parseInt(input.replaceAll("delay:", "").replaceAll("^[ \t]+", ""));
+								if (newDelay <= 0)
+									throw new DNConfigException("Error: delay must have a value greater than zero on line " + line);
+							}
 
-						else if (input.contains("effect:"))
-						{
-							newEffect = PotionEffectType.getByName(input.replaceAll("effect:", "").replaceAll("^[ \t]+", "").replaceAll("[ \t]+[0-9]+$", "").toUpperCase());
-							newLevel = Integer.parseInt(input.replaceAll("effect:", "").replaceAll("^[ \t]+", "").replaceAll("^[A-Z,a-z]*[ \t]+", "")) - 1;
+							else if (input.contains("effect:"))
+							{
+								newEffect = PotionEffectType.getByName(stringConfigCheck(input, "effect:").replaceAll("[ \t]+[0-9]+$", "").toUpperCase());
+								newLevel = Integer.parseInt(stringConfigCheck(input, "effect:").replaceAll("^[A-Z,a-z]*[ \t]+", "")) - 1;
+							}
+							else if (input.contains("offtext:"))
+								newOffText = stringConfigCheck(input, "offtext:");
+							else if (input.contains("text:"))
+								newText = stringConfigCheck(input, "text:");
+							if (input.contains("---"))
+							{
+								done = true;
+								if (newDelay == -1 || newEffect == null)
+									throw new DNConfigException("Error: delay or effect is missing from an effects entry on line " + line);
+								effects.add(new EffectTimePair(newDelay, newEffect, newLevel, newText, newOffText));
+							}
 						}
-						else if (input.contains("offtext:"))
-							newOffText = input.replaceAll("offtext:", "").replaceAll("^[ \t]+", "");
-						else if (input.contains("text:"))
-							newText = input.replaceAll("text:", "").replaceAll("^[ \t]+", "");
-						if (input.contains("---"))
+						catch (DNConfigException e)
 						{
-							done = true;
-							if (newDelay == -1 || newEffect == null)
-								throw new IOException("Error: delay or effect is missing from an effects entry on line " + line);
-							effects.add(new EffectTimePair(newDelay, newEffect, newLevel, newText, newOffText));
-							System.out.println(effects);
+							getLogger().warning("ERROR: Can't read an entry in effects.txt (is there a typo on line " + line + "?)");
+							ready = false;
+						}
+						catch (NumberFormatException e)
+						{
+							getLogger().warning("ERROR: Can't read an entry in effects.txt (is there a typo on line " + line + "?)");
+							ready=false;
 						}
 					}
 				}
-			}
-			catch (NumberFormatException e)
-			{
-				System.out.println(e);
-				getLogger().warning("ERROR: Can't read effects.txt (is there a typo on line " + line + "?)");
-			}
-			catch (IOException e)
-			{
-				System.out.println(e);
-				getLogger().warning("ERROR: Can't read effects.txt (is there a typo on line " + line + "?)");
 			}
 			finally
 			{
@@ -778,10 +909,9 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		}
 	}
 
-	// TODO: Improve line-number reporting
-
 	private void loadMobBuffs()
 	{
+		boolean ready = true;
 		mobBuffs = new ArrayList<MobBuff>();
 		Scanner scanner;
 		int line = 0;
@@ -803,47 +933,60 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					boolean canDrown = true;
 					boolean autoChase = false;
 
-					while (!done)
+					if (!ready)
+						ready = scanner.nextLine().contains("---");
+
+					while (!done && ready)
 					{
-						line++;
-						input = scanner.nextLine();
-						if (input.contains("delay:"))
-							newDelay = Integer.parseInt(input.replaceAll("delay:", "").replaceAll("^[ \t]+", ""));
-						else if (input.contains("mob:"))
-							mobs.add(EntityType.valueOf(input.replaceAll("mob:", "").replaceAll("^[ \t]+", "").toUpperCase()));
-						else if (input.contains("effect:"))
+						try
 						{
-							newEffect = PotionEffectType.getByName(input.replaceAll("effect:", "").replaceAll("^[ \t]+", "").replaceAll("[ \t]+[0-9]+$", ""));
-							newLevel = Integer.parseInt(input.replaceAll("effect:", "").replaceAll("^[ \t]+", "").replaceAll("^[A-Z,a-z]*[ \t]+", "")) - 1;
-							effects.add(new PotionEffect(newEffect, Integer.MAX_VALUE, newLevel));
+							line++;
+							input = scanner.nextLine();
+							if (input.contains("delay:"))
+								newDelay = Integer.parseInt(input.replaceAll("delay:", "").replaceAll("^[ \t]+", ""));
+							else if (input.contains("mob:"))
+								mobs.add(EntityType.valueOf(stringConfigCheck(input, "mob:").toUpperCase()));
+							else if (input.contains("effect:"))
+							{
+								newEffect = PotionEffectType.getByName(stringConfigCheck(input, "effect:").replaceAll("[ \t]+[0-9]+$", ""));
+								newLevel = Integer.parseInt(stringConfigCheck(input, "effect:").replaceAll("^[A-Z,a-z]*[ \t]+", "")) - 1;
+								effects.add(new PotionEffect(newEffect, Integer.MAX_VALUE, newLevel));
+							}
+							else if (input.contains("healthMult:"))
+								healthMult = doubleConfigCheck(input, "healthMult:");
+							else if (input.contains("canDrown:"))
+								canDrown = boolConfigCheck(input, "canDrown:");
+							else if (input.contains("autoChase:"))
+								autoChase = boolConfigCheck(input, "autoChase:");
+							if (input.contains("---"))
+							{
+								done = true;
+								if (mobs.size() == 0)
+									throw new DNConfigException("Error: There are no mobs specified in mobs.txt on line ");
+								if (newDelay == -1)
+									throw new DNConfigException("Error: There is no delay specified in mobs.txt on line ");
+								mobBuffs.add(new MobBuff(newDelay, mobs, effects, healthMult, canDrown, autoChase));
+							}
 						}
-						else if (input.contains("healthMult:"))
-							healthMult = doubleConfigCheck(input, "healthMult:");
-						else if (input.contains("canDrown:"))
-							canDrown = boolConfigCheck(input, "canDrown:");
-						else if (input.contains("autoChase:"))
-							autoChase = boolConfigCheck(input, "autoChase:");
-						if (input.contains("---"))
+						catch (DNConfigException e)
 						{
-							done = true;
-							if (mobs.size() == 0)
-								throw new IOException("Error: There are no mobs specified in mobs.txt on line ");
-							if (newDelay == -1)
-								throw new IOException("Error: There is no delay specified in mobs.txt on line ");
-							mobBuffs.add(new MobBuff(newDelay, mobs, effects, healthMult, canDrown, autoChase));
+							getLogger().warning(e.getMessage() + " " + line);
+							ready = false;
+						}
+						catch (NumberFormatException e)
+						{
+							getLogger().warning("Error: Can't read an entry in mobBuffs.txt (is there a typo on line " + line + "?)");
+							ready=false;
+						}
+						catch (IllegalArgumentException e)
+						{
+							getLogger().warning("Error: Can't read an entry in mobBuffs.txt (is there a typo on line " + line + "?)");
+							ready=false;
 						}
 					}
 				}
 			}
-			catch (NumberFormatException e)
-			{
-				System.out.println(e);
-				getLogger().warning("ERROR: Can't read effects.txt (is there a typo on line " + line + "?)");
-			}
-			catch (IOException e)
-			{
-				getLogger().warning(e.getMessage() + " " + line);
-			}
+
 			finally
 			{
 				scanner.close();
@@ -884,19 +1027,13 @@ public class DeadlierNights extends JavaPlugin implements Listener
 
 	}
 
-	// TODO: Standardize the input mechanisms so that they all produce the same
-	// types of errors and warnings
-
-	// TODO: Make input tolerate faults- skip past a potion block, for example
-
 	// TODO: Add documentation to config files
 
 	// TODO: Make server commands write to the config files
 
-	// TODO: Add scare commands
-
 	private void loadScares()
 	{
+		boolean ready = true;
 		scares = new ArrayList<Scare>();
 		Scanner scanner;
 		int line = 0;
@@ -911,7 +1048,6 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					boolean done = false;
 					ScareType newType = null;
 					int newDelay = -1;
-					int newExtraDelay = 0;
 					int newFrequency = -1;
 					int newExtraFrequency = 0;
 					double newProbability = -1;
@@ -920,73 +1056,80 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					int newVolume = 1;
 					int newRange = 10;
 
-					while (!done)
-					{
-						line++;
-						input = scanner.nextLine();
-						if (input.contains("type:"))
-							newType = ScareType.valueOf(input.replaceAll("type:", "").replaceAll("^[ \t]+", "").toUpperCase());
-						else if (input.contains("delay:"))
-						{
-							newDelay = Integer.parseInt(input.replaceAll("delay:", "").replaceAll("^[ \t]+", ""));
-							if (newDelay <= 0)
-								throw new IOException("Error: Delay must have a value of greater than zero on line ");
-						}
-						else if (input.contains("extrafrequency:"))
-						{
-							newExtraFrequency = Integer.parseInt(input.replaceAll("extrafrequency:", "").replaceAll("^[ \t]+", ""));
-							if (newExtraFrequency < 0)
-								throw new IOException("Error: Extra frequency must have a value of greater or equal to zero on line ");
-						}
-						else if (input.contains("frequency:"))
-						{
-							newFrequency = Integer.parseInt(input.replaceAll("frequency:", "").replaceAll("^[ \t]+", ""));
-							if (newFrequency <= 0)
-								throw new IOException("Error: Frequency must have a value of greater than zero on line ");
-						}
-						else if (input.contains("probability"))
-							newProbability = Double.parseDouble(input.replaceAll("probability:", "").replaceAll("^[ \t]+", ""));
-						else if (input.contains("sound:"))
-							newSoundToPlay = input.replaceAll("sound:", "").replaceAll("^[ \t]+", "");
-						else if (input.contains("volume:"))
-							newVolume = intConfigCheck(input, "volume:");
-						else if (input.contains("range:"))
-							newRange = intConfigCheck(input, "range:");
-						if (input.contains("---"))
-						{
-							done = true;
-							if (newType == null)
-								throw new IOException("Scare is missing a type; ends on line ");
-							else
-							{
-								if (newDelay == -1)
-									throw new IOException("Error: FakeSound scare is missing a delay on line ");
-								if (newFrequency == -1)
-									throw new IOException("Error: FakeSound scare is missing a frequency on line ");
-								if (newProbability == -1)
-									throw new IOException("Error: FakeSound scare is missing a probability on line ");
+					if (!ready)
+						ready = scanner.nextLine().contains("---");
 
-								if (newType.equals(ScareType.FAKESOUND))
+					while (!done && ready)
+					{
+						try
+						{
+							line++;
+							input = scanner.nextLine();
+							if (input.contains("type:"))
+								newType = ScareType.valueOf(stringConfigCheck(input, "type:").toUpperCase());
+							else if (input.contains("delay:"))
+							{
+								newDelay = Integer.parseInt(stringConfigCheck(input, "delay:"));
+								if (newDelay <= 0)
+									throw new DNConfigException("Error: Delay must have a value of greater than zero on line ");
+							}
+							else if (input.contains("extrafrequency:"))
+							{
+								newExtraFrequency = Integer.parseInt(stringConfigCheck(input, "extrafrequency:"));
+								if (newExtraFrequency < 0)
+									throw new DNConfigException("Error: Extra frequency must have a value of greater or equal to zero on line ");
+							}
+							else if (input.contains("frequency:"))
+							{
+								newFrequency = Integer.parseInt(stringConfigCheck(input, "frequency:"));
+								if (newFrequency <= 0)
+									throw new DNConfigException("Error: Frequency must have a value of greater than zero on line ");
+							}
+							else if (input.contains("probability"))
+								newProbability = Double.parseDouble(input.replaceAll("probability:", "").replaceAll("^[ \t]+", ""));
+							else if (input.contains("sound:"))
+								newSoundToPlay = input.replaceAll("sound:", "").replaceAll("^[ \t]+", "");
+							else if (input.contains("volume:"))
+								newVolume = intConfigCheck(input, "volume:");
+							else if (input.contains("range:"))
+								newRange = intConfigCheck(input, "range:");
+							if (input.contains("---"))
+							{
+								done = true;
+								if (newType == null)
+									throw new DNConfigException("Scare is missing a type; ends on line ");
+								else
 								{
-									if (newSoundToPlay == null)
-										throw new IOException("Error: FakeSound scare is missing a sound on line ");
-									scares.add(new Scare(ScareType.FAKESOUND, newDelay, newFrequency, newExtraFrequency, newProbability, newSoundToPlay, newVolume, newRange));
+									if (newDelay == -1)
+										throw new DNConfigException("Error: FakeSound scare is missing a delay on line ");
+									if (newFrequency == -1)
+										throw new DNConfigException("Error: FakeSound scare is missing a frequency on line ");
+									if (newProbability == -1)
+										throw new DNConfigException("Error: FakeSound scare is missing a probability on line ");
+
+									if (newType.equals(ScareType.FAKESOUND))
+									{
+										if (newSoundToPlay == null)
+											throw new DNConfigException("Error: FakeSound scare is missing a sound on line ");
+										scares.add(new Scare(ScareType.FAKESOUND, newDelay, newFrequency, newExtraFrequency, newProbability, newSoundToPlay, newVolume, newRange));
+									}
 								}
 							}
-
+						}
+						catch (DNConfigException e)
+						{
+							getLogger().warning(e.getMessage() + " " + line);
+							ready = false;
+						}
+						catch (NumberFormatException e)
+						{
+							getLogger().warning("ERROR: Can't read an entry in scares.txt (is there a typo on line " + line + "?)");
+							ready=false;
 						}
 					}
 				}
 			}
-			catch (NumberFormatException e)
-			{
-				System.out.println(e);
-				getLogger().warning("ERROR: Can't read scares.txt (is there a typo on line " + line + "?)");
-			}
-			catch (IOException e)
-			{
-				getLogger().warning(e.getMessage() + " " + line);
-			}
+
 			finally
 			{
 				scanner.close();
@@ -1024,11 +1167,9 @@ public class DeadlierNights extends JavaPlugin implements Listener
 
 	// TODO: Make this more forgiving
 
-	private boolean boolConfigCheck(String input, String check) throws IOException
+	private boolean boolConfigCheck(String input, String check) throws DNConfigException
 	{
-		if (defined.contains(check))
-			throw new IOException("Error: Setting has already been defined; redefinition occurred on line ");
-		else if (input.replaceAll(check, "").replaceAll("^[ \t]+", "").equalsIgnoreCase("true"))
+		if (input.replaceAll(check, "").replaceAll("^[ \t]+", "").equalsIgnoreCase("true"))
 		{
 			defined.add(check);
 			return true;
@@ -1039,36 +1180,31 @@ public class DeadlierNights extends JavaPlugin implements Listener
 			return false;
 		}
 		else
-			throw new IOException("Error: Invalid token; can only be true/false on line ");
+			throw new DNConfigException("Error: Invalid token; can only be true/false on line ");
 	}
 
 	// TODO: Make this more forgiving
 
-	private int intConfigCheck(String input, String check) throws IOException
+	private int intConfigCheck(String input, String check) throws DNConfigException
 	{
-		if (defined.contains(check))
-			throw new IOException("Error: Setting has already been defined; redefinition occurred on line ");
-		else
+		try
 		{
-			try
-			{
-				int temp = Integer.parseInt((input.replaceAll(check, "").replaceAll("^[ \t]+", "")));
-				if (temp < 0)
-					throw new NumberFormatException();
-				else
-					return temp;
-			}
-			catch (NumberFormatException e)
-			{
-				throw new IOException("Error: Invalid token; must be a positive integer on line ");
-			}
+			int temp = Integer.parseInt((input.replaceAll(check, "").replaceAll("^[ \t]+", "")));
+			if (temp < 0)
+				throw new NumberFormatException();
+			else
+				return temp;
+		}
+		catch (NumberFormatException e)
+		{
+			throw new DNConfigException("Error: Invalid token; must be a positive integer on line ");
 		}
 	}
 
-	private double doubleConfigCheck(String input, String check) throws IOException
+	private double doubleConfigCheck(String input, String check) throws DNConfigException
 	{
 		if (defined.contains(check))
-			throw new IOException("Error: Setting has already been defined; redefinition occurred on line ");
+			throw new DNConfigException("Error: Setting has already been defined; redefinition occurred on line ");
 		else
 		{
 			try
@@ -1081,9 +1217,14 @@ public class DeadlierNights extends JavaPlugin implements Listener
 			}
 			catch (NumberFormatException e)
 			{
-				throw new IOException("Error: Invalid token; must be a positive real number on line ");
+				throw new DNConfigException("Error: Invalid token; must be a positive real number on line ");
 			}
 		}
+	}
+
+	private String stringConfigCheck(String input, String check)
+	{
+		return (input.replaceAll(check, "").replaceAll("^[ \t]+", ""));
 	}
 
 	/**
@@ -1095,6 +1236,17 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		loadConfig();
 		loadEffects();
 		loadMobBuffs();
+		loadScares();
+		for (Player player : getServer().getOnlinePlayers())
+		{
+			playerMap.put(player.getName(), 0);
+			exemptMap.put(player.getName(), player.hasPermission("deadliernights.exempt"));
+			scareMap.put(player.getName(), new HashMap<Scare, Integer>());
+			for (Scare scare : scares)
+			{
+				scareMap.get(player.getName()).put(scare, -1 * scare.getExtraFrequencyRandom());
+			}
+		}
 	}
 
 	/**
@@ -1134,6 +1286,11 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		ArrayList<PotionEffect> toReturn = new ArrayList<PotionEffect>();
 		ArrayList<PotionEffectType> types = new ArrayList<PotionEffectType>();
 		HashMap<PotionEffectType, Integer> maxes = new HashMap<PotionEffectType, Integer>();
+		playerMap = new HashMap<String, Integer>();
+		exemptMap = new HashMap<String, Boolean>();
+		scareMap = new HashMap<String, HashMap<Scare, Integer>>();
+		shortestDelay = getShortestDelay();
+		
 		for (PotionEffect eff : potions)
 		{
 			if (!types.contains(eff.getType()))
@@ -1145,7 +1302,6 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		}
 		for (int i = 0; i < maxes.size(); i++)
 		{
-			System.out.println("Condensed effect: " + new PotionEffect(types.get(i), Integer.MAX_VALUE, maxes.get(types.get(i))));
 			toReturn.add(new PotionEffect(types.get(i), Integer.MAX_VALUE, maxes.get(types.get(i))));
 		}
 		return toReturn;
@@ -1162,5 +1318,32 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		}
 
 		return shortest;
+	}
+
+	/**
+	 * @param player
+	 */
+	public void curePlayer(Player player)
+	{
+		playerMap.put(player.getName(), 0);
+
+		for (EffectTimePair effect : effects)
+		{
+			player.removePotionEffect(effect.getEffect());
+		}
+
+		player.sendMessage("[DeadlierNights]: You have been cured of your exposure.");
+	}
+
+	/**
+	 * Gets the
+	 * 
+	 * @param player
+	 * @param sender
+	 */
+	public void queryPlayer(Player player, Player sender)
+	{
+		sender.sendMessage(player.getName() + " currently has an exposure level of " + playerMap.get(player.getName()));
+
 	}
 }
