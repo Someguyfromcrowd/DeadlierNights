@@ -64,6 +64,11 @@ commands:
     usage: /dnhelp [topic]
     permission: DeadlierNights.help
     permission-message: You don't have permission to use that command!
+  DNstatus:
+    description: Gives information about the status of DeadlierNights
+    usage: /dnstatus [config]
+    permission: DeadlierNights.status
+    permission-message: You don't have permission to use that command!
 
 permissions:
    deadliernights.*:
@@ -80,6 +85,8 @@ permissions:
        deadliernights.exempt: true
        deadliernights.exempt.others: true
        deadliernights.cure: true
+       deadliernights.help: true
+       deadliernights.status: true
      default: op
    deadliernights.set.*:
      description: Gives access to all set commands
@@ -116,3 +123,5 @@ permissions:
    deadliernights.help:
      description: Allows for the lookup of information about DeadlierNights
      default: true
+   deadliernights.status:
+     description: Allows for the lookup of status info

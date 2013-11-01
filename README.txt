@@ -56,28 +56,43 @@ If anything breaks, you can just delete the config files and new ones will be cr
 
 Permissions:
 
-deadliernights.set.chat:
+   deadliernights.set.chat:
      description: Allows toggling of chat messages for players
    deadliernights.set.log:
      description: Allows toggling of log messages
-   deadliernights.set.decay:
-     description: Allows for the exposure decay rate to be set
    deadliernights.set.potion:
      description: Allows for the toggling of potion debuffs
    deadliernights.set.mob:
      description: Allows for the toggling of mob buffs
+   deadliernights.set.scare:
+     description: Allows for toggling of scares
+   deadliernights.set.fatigue:
+     description: Allows for toggling of fatigue
+   deadliernights.set.decay:
+     description: Allows for the exposure decay rate to be set
    deadliernights.reload:
      description: Allows for reloading of DeadlierNights' configuration files
    deadliernights.exempt:
      description: Allows the player to make him/her self immune to DeadlierNights' debuffs
    deadliernights.exempt.others:
      description: As with exempt, but also allows for other players to be affected
+   deadliernights.cure:
+     description: Allows for the curing of players
+   deadliernights.help:
+     description: Allows for the lookup of information about DeadlierNights
      
 You can also use deadliernights.* to grant all permissions and deadliernights.set.* to grant all set permissions
      
 =====
 
 Changelog:
+
+v0.04a:
+	-Added scares
+	-Added first scare type: fake sounds
+	-Improved config loading to be more fault-tolerant
+	-Improved line-number reporting of errors
+	-Added further commands- /dncure, etc.
 
 v0.03a:
 	-Created this readme
