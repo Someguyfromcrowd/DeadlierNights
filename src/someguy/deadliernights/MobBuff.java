@@ -23,6 +23,9 @@ public class MobBuff
 	private ArrayList<EntityType> mobs;
 	private ArrayList<PotionEffect> buffs;
 
+	private int minBrightness; //Minimum brightness level this effect can occur at
+	private int maxBrightness; //Maximum brightness level this effect can occur at
+
 	/**
 	 * @param delay
 	 * @param mobs
@@ -30,8 +33,10 @@ public class MobBuff
 	 * @param healthMult 
 	 * @param canDrown 
 	 * @param autoChase 
+	 * @param minBrightness 
+	 * @param maxBrightness 
 	 */
-	public MobBuff(int delay, ArrayList<EntityType> mobs, ArrayList<PotionEffect> buffs, double healthMult, boolean canDrown, boolean autoChase)
+	public MobBuff(int delay, ArrayList<EntityType> mobs, ArrayList<PotionEffect> buffs, double healthMult, boolean canDrown, boolean autoChase, int minBrightness, int maxBrightness)
 	{
 		this.delay = delay;
 		this.mobs = mobs;
@@ -39,6 +44,8 @@ public class MobBuff
 		this.healthMult = healthMult;
 		this.canDrown = canDrown;
 		this.autoChase = autoChase;
+		this.minBrightness = minBrightness;
+		this.maxBrightness = maxBrightness;
 	}
 
 	/**
@@ -87,5 +94,17 @@ public class MobBuff
 	public boolean autoChase()
 	{
 		return autoChase;
+	}
+	
+	/**
+	 * @param arg0
+	 * @return whether or not the effect is currently active, given the current moon phase
+	 */
+	public boolean isRunning(MoonPhase arg0)
+	{
+		if (arg0.getBright() <= maxBrightness && arg0.getBright() >= minBrightness)
+			return true;
+		else
+			return false;
 	}
 }

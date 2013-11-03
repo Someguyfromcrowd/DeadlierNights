@@ -17,6 +17,9 @@ public class Scare
 	private int extraFrequency; //random extra delay
 	private double probability; //chance of happening per frequency; 0..1
 	
+	private int minBrightness;
+	private int maxBrightness;
+	
 	/* FAKESOUND */
 	private String soundToPlay;
 	private int volume;
@@ -38,13 +41,17 @@ public class Scare
 	 * @param range 
 	 */
 
-	public Scare(ScareType type, int delay, int frequency, int extraFrequency, double probability, String soundToPlay, int volume, int range)
+	public Scare(ScareType type, int delay, int frequency, int extraFrequency, double probability, String soundToPlay, int volume, int range, int minBrightness, int maxBrightness)
 	{
 		this.type = type;
 		this.delay = delay;
 		this.extraFrequency = extraFrequency;
 		this.frequency = frequency;
 		this.probability = probability;
+		
+		this.minBrightness = minBrightness;
+		this.maxBrightness = maxBrightness;
+		
 		if (type.equals(ScareType.FAKESOUND))
 		{
 			this.soundToPlay = soundToPlay;
@@ -161,5 +168,17 @@ public class Scare
 	public int hashCode()
 	{
 		return (type.hashCode() << 5) * (delay + 259296436 % 7879) * 31;
+	}
+	
+	/**
+	 * @param arg0
+	 * @return whether or not the effect is currently active, given the current moon phase
+	 */
+	public boolean isRunning(MoonPhase arg0)
+	{
+		if (arg0.getBright() <= maxBrightness && arg0.getBright() >= minBrightness)
+			return true;
+		else
+			return false;
 	}
 }

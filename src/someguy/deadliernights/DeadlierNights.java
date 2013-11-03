@@ -11,6 +11,7 @@ import java.util.Scanner;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Creature;
@@ -45,12 +46,13 @@ public class DeadlierNights extends JavaPlugin implements Listener
 	private boolean mobEnable;
 	private boolean scareEnable;
 	private boolean fatigueEnable; // TODO: Implement fatigue
-	
+	private boolean moonEnable; // TODO: Implement moon moon
+
 	private boolean configError;
 	private boolean potionError;
 	private boolean mobError;
 	private boolean scareError;
-	//private boolean fatigueError;
+	// private boolean fatigueError; //TODO: this too
 
 	private int decayRate;
 	private int shortestDelay;
@@ -70,10 +72,12 @@ public class DeadlierNights extends JavaPlugin implements Listener
 		loadEffects();
 		loadMobBuffs();
 		loadScares();
+
 		playerMap = new HashMap<String, Integer>();
 		exemptMap = new HashMap<String, Boolean>();
 		scareMap = new HashMap<String, HashMap<Scare, Integer>>();
 		shortestDelay = getShortestDelay();
+
 		getServer().getPluginManager().registerEvents(this, this);
 		for (Player player : getServer().getOnlinePlayers())
 		{
@@ -120,23 +124,25 @@ public class DeadlierNights extends JavaPlugin implements Listener
 				{
 					for (EffectTimePair pair : effects)
 					{
-
-						if (pair.getDelay() < current)
+						if (!moonEnable || pair.isRunning(this.getMoonPhase(player.getWorld())))
 						{
-							if (!player.hasPotionEffect(pair.getEffect()))
+							if (pair.getDelay() < current)
+							{
+								if (!player.hasPotionEffect(pair.getEffect()))
+								{
+									player.addPotionEffect(new PotionEffect(pair.getEffect(), Integer.MAX_VALUE, pair.getLevel()), true);
+									if (log)
+										getLogger().info("Applied " + pair.getEffect().getName() + " " + pair.getLevel() + " to " + playerName);
+								}
+							}
+							else if (pair.getDelay() == current)
 							{
 								player.addPotionEffect(new PotionEffect(pair.getEffect(), Integer.MAX_VALUE, pair.getLevel()), true);
 								if (log)
 									getLogger().info("Applied " + pair.getEffect().getName() + " " + pair.getLevel() + " to " + playerName);
+								if (chat && !pair.getText().equals(""))
+									player.sendMessage(pair.getText());
 							}
-						}
-						else if (pair.getDelay() == current)
-						{
-							player.addPotionEffect(new PotionEffect(pair.getEffect(), Integer.MAX_VALUE, pair.getLevel()), true);
-							if (log)
-								getLogger().info("Applied " + pair.getEffect().getName() + " " + pair.getLevel() + " to " + playerName);
-							if (chat && !pair.getText().equals(""))
-								player.sendMessage(pair.getText());
 						}
 					}
 				}
@@ -207,22 +213,25 @@ public class DeadlierNights extends JavaPlugin implements Listener
 				{
 					for (MobBuff buff : mobBuffs)
 					{
-						if (buff.getMobs().contains(e.getEntityType()) && buff.getDelay() < playerMap.get(player.getName()))
+						if (!moonEnable || buff.isRunning(this.getMoonPhase(player.getWorld())))
 						{
-							for (PotionEffect eff : buff.getBuffs())
+							if (buff.getMobs().contains(e.getEntityType()) && buff.getDelay() < playerMap.get(player.getName()))
 							{
-								e.getEntity().addPotionEffect(eff, true);
+								for (PotionEffect eff : buff.getBuffs())
+								{
+									e.getEntity().addPotionEffect(eff, true);
+								}
+
+								if (buff.getHealthMult() != 1)
+									e.getEntity().setMaxHealth(e.getEntity().getMaxHealth() * buff.getHealthMult());
+
+								if (!buff.canDrown())
+									e.getEntity().setMaximumAir(Integer.MAX_VALUE);
+
+								if (buff.autoChase())
+									((Creature) e.getEntity()).setTarget(player);
+
 							}
-
-							if (buff.getHealthMult() != 1)
-								e.getEntity().setMaxHealth(e.getEntity().getMaxHealth() * buff.getHealthMult());
-
-							if (!buff.canDrown())
-								e.getEntity().setMaximumAir(Integer.MAX_VALUE);
-
-							if (buff.autoChase())
-								((Creature) e.getEntity()).setTarget(player);
-
 						}
 					}
 				}
@@ -254,24 +263,28 @@ public class DeadlierNights extends JavaPlugin implements Listener
 
 				for (Scare scare : scares)
 				{
-					if (scare.getDelay() <= playerMap.get(playerName))
+					if (!moonEnable || scare.isRunning(this.getMoonPhase(player.getWorld())))
 					{
-						if (scareMap.get(playerName).get(scare) > scare.getFrequency() && scare.triggerScare())
+						if (scare.getDelay() <= playerMap.get(playerName))
 						{
-							if (scare.getType().equals(ScareType.FAKESOUND))
+							if (scareMap.get(playerName).get(scare) > scare.getFrequency() && scare.triggerScare())
 							{
-								int randomX = player.getLocation().getBlockX() + ((int) (2 * Math.random() * scare.getRange())) - scare.getRange();
-								int randomY = player.getLocation().getBlockY();
-								int randomZ = player.getLocation().getBlockZ() + ((int) (2 * Math.random() * scare.getRange())) - scare.getRange();
-								player.playSound(new Location(player.getWorld(), randomX, randomY, randomZ), Sound.valueOf(scare.getSoundToPlay().toUpperCase()), 1, 1);
+								if (scare.getType().equals(ScareType.FAKESOUND))
+								{
+									int randomX = player.getLocation().getBlockX() + ((int) (2 * Math.random() * scare.getRange())) - scare.getRange();
+									int randomY = player.getLocation().getBlockY();
+									int randomZ = player.getLocation().getBlockZ() + ((int) (2 * Math.random() * scare.getRange())) - scare.getRange();
+									player.playSound(new Location(player.getWorld(), randomX, randomY, randomZ), Sound.valueOf(scare.getSoundToPlay().toUpperCase()), 1, 1);
+								}
+								scareMap.get(playerName).put(scare, -1 * scare.getExtraFrequencyRandom());
 							}
-							scareMap.get(playerName).put(scare, -1 * scare.getExtraFrequencyRandom());
-						}
-						else
-						{
-							scareMap.get(playerName).put(scare, scareMap.get(playerName).get(scare) + 1);
+							else
+							{
+								scareMap.get(playerName).put(scare, scareMap.get(playerName).get(scare) + 1);
+							}
 						}
 					}
+
 				}
 			}
 		}
@@ -564,6 +577,34 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					return false;
 			}
 		}
+		else if (cmd.getName().equalsIgnoreCase("DNMoon"))
+		{
+			if (args.length == 0)
+			{
+				if (moonEnable)
+					sender.sendMessage("[DeadlierNights]: Moon effects are enabled");
+				else
+					sender.sendMessage("[DeadlierNights]: Moon effects are disabled");
+				return true;
+			}
+			else
+			{
+				if (args[0].equalsIgnoreCase("true") || args[0].equalsIgnoreCase("enable") || args[0].equalsIgnoreCase("on"))
+				{
+					moonEnable = true;
+					sender.sendMessage("[DeadlierNights]: Moon effects enabled.");
+					return true;
+				}
+				else if (args[0].equalsIgnoreCase("false") || args[0].equalsIgnoreCase("disable") || args[0].equalsIgnoreCase("off"))
+				{
+					scareEnable = false;
+					sender.sendMessage("[DeadlierNights]: Moon effects disabled.");
+					return true;
+				}
+				else
+					return false;
+			}
+		}
 		else if (cmd.getName().equalsIgnoreCase("DNDecay"))
 		{
 			if (args.length == 0)
@@ -718,7 +759,7 @@ public class DeadlierNights extends JavaPlugin implements Listener
 			else
 				return false;
 		}
-		else if (cmd.getName().equalsIgnoreCase("dnstatus"))
+		else if (cmd.getName().equalsIgnoreCase("DNstatus"))
 		{
 			if (args.length == 0)
 			{
@@ -756,7 +797,24 @@ public class DeadlierNights extends JavaPlugin implements Listener
 						sender.sendMessage("scares: loaded; " + scares.size() + " scares loaded");
 					return true;
 				}
-				return false;
+				else if (args[0].equalsIgnoreCase("players"))
+				{
+					sender.sendMessage("[DeadlierNights]: Information for players is as follows:");
+
+					for (Player player : getServer().getOnlinePlayers())
+					{
+						if (exemptMap.containsKey(player.getName()))
+						{
+							if (exemptMap.get(player.getName()))
+								sender.sendMessage(player.getName() + " is exempt from DeadlierNights");
+							else
+								sender.sendMessage(player.getName() + " has an exposure level of " + playerMap.get(player.getName()));
+						}
+					}
+					return true;
+				}
+				else
+					return false;
 			}
 			else
 				return false;
@@ -805,15 +863,17 @@ public class DeadlierNights extends JavaPlugin implements Listener
 							scareEnable = boolConfigCheck(input, "scare:");
 						else if (input.contains("fatigue:"))
 							fatigueEnable = boolConfigCheck(input, "fatigue:");
+						else if (input.contains("moonEffects:"))
+							moonEnable = boolConfigCheck(input, "moonEffects:");
 					}
 					catch (DNConfigException e)
 					{
-						configError=true;
+						configError = true;
 						getLogger().warning(e.getMessage() + line);
 					}
 					catch (NumberFormatException e)
 					{
-						configError=true;
+						configError = true;
 						getLogger().warning("Error: Can't read an entry in config.txt (is there a typo on line " + line + "?)");
 					}
 				}
@@ -831,7 +891,7 @@ public class DeadlierNights extends JavaPlugin implements Listener
 			}
 			catch (IOException e1)
 			{
-				configError=true;
+				configError = true;
 				e1.printStackTrace();
 			}
 			try
@@ -848,7 +908,7 @@ public class DeadlierNights extends JavaPlugin implements Listener
 			}
 			catch (IOException ee)
 			{
-				configError=true;
+				configError = true;
 				getLogger().warning(ee.getMessage());
 			}
 		}
@@ -875,6 +935,9 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					int newLevel = 0;
 					String newText = "";
 					String newOffText = "";
+					MoonPhase minMoon = MoonPhase.NEW;
+					MoonPhase maxMoon = MoonPhase.FULL;
+
 					if (!ready)
 						ready = scanner.nextLine().contains("---");
 					while (ready && !done)
@@ -899,23 +962,33 @@ public class DeadlierNights extends JavaPlugin implements Listener
 								newOffText = stringConfigCheck(input, "offtext:");
 							else if (input.contains("text:"))
 								newText = stringConfigCheck(input, "text:");
+							else if (input.contains("minMoon:"))
+								minMoon = MoonPhase.valueOf(stringConfigCheck(input, "minMoon:"));
+							else if (input.contains("maxMoon:"))
+								maxMoon = MoonPhase.valueOf(stringConfigCheck(input, "maxMoon:"));
 							if (input.contains("---"))
 							{
 								done = true;
 								if (newDelay == -1 || newEffect == null)
 									throw new DNConfigException("Error: delay or effect is missing from an effects entry on line " + line);
-								effects.add(new EffectTimePair(newDelay, newEffect, newLevel, newText, newOffText));
+								effects.add(new EffectTimePair(newDelay, newEffect, newLevel, newText, newOffText, minMoon.getBright(), maxMoon.getBright()));
 							}
 						}
 						catch (DNConfigException e)
 						{
-							getLogger().warning("ERROR: Can't read an entry in effects.txt (is there a typo on line " + line + "?)");
+							getLogger().warning("Error: Can't read an entry in effects.txt (is there a typo on line " + line + "?)");
 							potionError = true;
 							ready = false;
 						}
 						catch (NumberFormatException e)
 						{
-							getLogger().warning("ERROR: Can't read an entry in effects.txt (is there a typo on line " + line + "?)");
+							getLogger().warning("Error: Can't read an entry in effects.txt (is there a typo on line " + line + "?)");
+							potionError = true;
+							ready = false;
+						}
+						catch (IllegalArgumentException e)
+						{
+							getLogger().warning("Error: Can't read an entry in effects.txt (is there a typo on line " + line + "?)");
 							potionError = true;
 							ready = false;
 						}
@@ -994,6 +1067,8 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					double healthMult = 1;
 					boolean canDrown = true;
 					boolean autoChase = false;
+					MoonPhase minMoon = MoonPhase.NEW;
+					MoonPhase maxMoon = MoonPhase.FULL;
 
 					if (!ready)
 						ready = scanner.nextLine().contains("---");
@@ -1020,6 +1095,11 @@ public class DeadlierNights extends JavaPlugin implements Listener
 								canDrown = boolConfigCheck(input, "canDrown:");
 							else if (input.contains("autoChase:"))
 								autoChase = boolConfigCheck(input, "autoChase:");
+							else if (input.contains("minMoon:"))
+								minMoon = MoonPhase.valueOf(stringConfigCheck(input, "minMoon:"));
+							else if (input.contains("maxMoon:"))
+								maxMoon = MoonPhase.valueOf(stringConfigCheck(input, "maxMoon:"));
+
 							if (input.contains("---"))
 							{
 								done = true;
@@ -1027,7 +1107,7 @@ public class DeadlierNights extends JavaPlugin implements Listener
 									throw new DNConfigException("Error: There are no mobs specified in mobs.txt on line ");
 								if (newDelay == -1)
 									throw new DNConfigException("Error: There is no delay specified in mobs.txt on line ");
-								mobBuffs.add(new MobBuff(newDelay, mobs, effects, healthMult, canDrown, autoChase));
+								mobBuffs.add(new MobBuff(newDelay, mobs, effects, healthMult, canDrown, autoChase, minMoon.getBright(), maxMoon.getBright()));
 							}
 						}
 						catch (DNConfigException e)
@@ -1120,6 +1200,8 @@ public class DeadlierNights extends JavaPlugin implements Listener
 					int newFrequency = -1;
 					int newExtraFrequency = 0;
 					double newProbability = -1;
+					MoonPhase minMoon = MoonPhase.NEW;
+					MoonPhase maxMoon = MoonPhase.FULL;
 
 					String newSoundToPlay = null;
 					int newVolume = 1;
@@ -1156,6 +1238,10 @@ public class DeadlierNights extends JavaPlugin implements Listener
 							}
 							else if (input.contains("probability"))
 								newProbability = Double.parseDouble(input.replaceAll("probability:", "").replaceAll("^[ \t]+", ""));
+							else if (input.contains("minMoon:"))
+								minMoon = MoonPhase.valueOf(stringConfigCheck(input, "minMoon:"));
+							else if (input.contains("maxMoon:"))
+								maxMoon = MoonPhase.valueOf(stringConfigCheck(input, "maxMoon:"));
 							else if (input.contains("sound:"))
 								newSoundToPlay = input.replaceAll("sound:", "").replaceAll("^[ \t]+", "");
 							else if (input.contains("volume:"))
@@ -1180,7 +1266,7 @@ public class DeadlierNights extends JavaPlugin implements Listener
 									{
 										if (newSoundToPlay == null)
 											throw new DNConfigException("Error: FakeSound scare is missing a sound on line ");
-										scares.add(new Scare(ScareType.FAKESOUND, newDelay, newFrequency, newExtraFrequency, newProbability, newSoundToPlay, newVolume, newRange));
+										scares.add(new Scare(ScareType.FAKESOUND, newDelay, newFrequency, newExtraFrequency, newProbability, newSoundToPlay, newVolume, newRange, minMoon.getBright(), maxMoon.getBright()));
 									}
 								}
 							}
@@ -1417,6 +1503,33 @@ public class DeadlierNights extends JavaPlugin implements Listener
 	public void queryPlayer(Player player, Player sender)
 	{
 		sender.sendMessage(player.getName() + " currently has an exposure level of " + playerMap.get(player.getName()));
+	}
 
+	private MoonPhase getMoonPhase(World world)
+	{
+		long time = world.getFullTime();
+		time = time / 24000;
+		int phase = (int) (time % 8);
+		switch (phase)
+		{
+		case 0:
+			return MoonPhase.FULL;
+		case 1:
+			return MoonPhase.GIBBOUS;
+		case 2:
+			return MoonPhase.QUARTER;
+		case 3:
+			return MoonPhase.CRESCENT;
+		case 4:
+			return MoonPhase.NEW;
+		case 5:
+			return MoonPhase.CRESCENT;
+		case 6:
+			return MoonPhase.QUARTER;
+		case 7:
+			return MoonPhase.GIBBOUS;
+		default:
+			return MoonPhase.FULL;
+		}
 	}
 }

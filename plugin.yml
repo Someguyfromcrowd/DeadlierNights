@@ -1,6 +1,6 @@
 name: DeadlierNights
 main: someguy.deadliernights.DeadlierNights
-version: 0.04a
+version: 0.05a
 author: Someguyfromcrowd
 
 commands:
@@ -33,6 +33,11 @@ commands:
     description: Enables or disables fatigue
     usage: /dnfatigue [true/false]
     permission: DeadlierNights.set.fatigue
+    permission-message: You don't have permission to use that command!
+  DNmoon:
+    description: Enables or disables moon effects
+    usage: /dnmoon [true/false]
+    permission: DeadlierNights.set.moon
     permission-message: You don't have permission to use that command!
   DNdecay:
     description: Sets the decay rate for DeadlierNights
@@ -80,6 +85,7 @@ permissions:
        deadliernights.set.mob: true
        deadliernights.set.scare: true
        deadliernights.set.fatigue: true
+       deadliernights.set.moon: true
        deadliernights.set.decay: true
        deadliernights.reload: true
        deadliernights.exempt: true
@@ -107,9 +113,11 @@ permissions:
    deadliernights.set.mob:
      description: Allows for the toggling of mob buffs
    deadliernights.set.scare:
-     description: Allows for toggling of scares
+     description: Allows for the toggling of scares
    deadliernights.set.fatigue:
-     description: Allows for toggling of fatigue
+     description: Allows for the toggling of fatigue
+   deadliernights.set.moon:
+     description: Allows for the toggling of moon effects
    deadliernights.set.decay:
      description: Allows for the exposure decay rate to be set
    deadliernights.reload:

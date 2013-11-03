@@ -22,9 +22,13 @@ delay: how long it takes for the effect to occur
 effect: a potion effect in the form of <name> <level>
 text: a chat message to display to the afflicted player when the effect occurs
 offtext: a chat message to display to the player when the effect is lifted (only if decay rate > 0)
+minMoon: the darkest moon phase that this effect should function at- NEW/CRESCENT/QUARTER/GIBBOUS/FULL
+maxMoon: the brightest moon phase that this effect should function at- NEW/CRESCENT/QUARTER/GIBBOUS/FULL
 ---: ends an effect-set
 
 *NOTE*: You can only specify one potion effect per effect-set, but can specify as many sets as you would like
+
+Moon phases are inclusive. For example, if you set minMoon to NEW and maxMoon to CRESCENT, the effects will work if the moon is new or crescent (both waning and waxing)
 
 mobBuffs.txt:
 
@@ -65,9 +69,11 @@ Permissions:
    deadliernights.set.mob:
      description: Allows for the toggling of mob buffs
    deadliernights.set.scare:
-     description: Allows for toggling of scares
+     description: Allows for the toggling of scares
    deadliernights.set.fatigue:
-     description: Allows for toggling of fatigue
+     description: Allows for the toggling of fatigue
+   deadliernights.set.moon:
+     description: Allows for the toggling of moon effects
    deadliernights.set.decay:
      description: Allows for the exposure decay rate to be set
    deadliernights.reload:
@@ -80,12 +86,18 @@ Permissions:
      description: Allows for the curing of players
    deadliernights.help:
      description: Allows for the lookup of information about DeadlierNights
+     default: true
+   deadliernights.status:
+     description: Allows for the lookup of status info
      
 You can also use deadliernights.* to grant all permissions and deadliernights.set.* to grant all set permissions
      
 =====
 
 Changelog:
+
+v0.05a:
+	-Added moon effects
 
 v0.04a:
 	-Added scares
